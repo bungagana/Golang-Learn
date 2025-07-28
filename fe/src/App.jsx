@@ -13,12 +13,24 @@ export default function App() {
   const [page, setPage] = useState(0); // halaman aktif buat pagination
 
   // bikin efek animasi data muncul 1-per-1 setiap 1 detik
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setVisibleIndex((prev) => prev + 1);
-    }, 1000); // update tiap 1 detik
-    return () => clearInterval(interval); // clear interval kalo komponen unmount
-  }, []);
+useEffect(() => {
+  if (!raspberryData.length && !mpptData.length) return;
+
+  const maxLength = Math.max(raspberryData.length, mpptData.length);
+
+  const interval = setInterval(() => {
+    setVisibleIndex((prev) => {
+      if (prev + 1 >= maxLength) {
+        clearInterval(interval);
+        return prev; // stop nambah
+      }
+      return prev + 1;
+    });
+  }, 1000);
+
+  return () => clearInterval(interval);
+}, [raspberryData, mpptData]);
+
 
   // ambil data yg udh "visible" sampe index tertentu
   const getVisible = (data) => data.slice(0, visibleIndex + 1);
