@@ -17,32 +17,31 @@ export default function App() {
   const [sensorData, setSensorData] = useState([]);
   const [mpptData, setMpptData] = useState([]);
 
+  const [visibleIndex, setVisibleIndex] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Fetch all hourly data in parallel
   useEffect(() => {
     setLoading(true);
     setError(null);
 
     Promise.all([
-      fetch(`${apiBase}/api/raspberry/hourly`),
-      fetch(`${apiBase}/api/sensor/hourly`),
-      fetch(`${apiBase}/api/mppt/hourly`),
+      fetch(`${apiBase}/api/raspberry`),
+      fetch(`${apiBase}/api/sensor`),
+      fetch(`${apiBase}/api/mppt`),
     ])
       .then(async ([resRasp, resSens, resMppt]) => {
-        if (!resRasp.ok)
-          throw new Error("Failed to fetch Raspberry hourly data");
-        if (!resSens.ok) throw new Error("Failed to fetch Sensor hourly data");
-        if (!resMppt.ok) throw new Error("Failed to fetch MPPT hourly data");
+        if (!resRasp.ok) throw new Error("Failed to fetch Raspberry data");
+        if (!resSens.ok) throw new Error("Failed to fetch Sensor data");
+        if (!resMppt.ok) throw new Error("Failed to fetch MPPT data");
 
-        const raspJson = await resRasp.json();
-        const sensJson = await resSens.json();
-        const mpptJson = await resMppt.json();
+        const rasp = await resRasp.json();
+        const sens = await resSens.json();
+        const mppt = await resMppt.json();
 
-        setRaspberryData(raspJson);
-        setSensorData(sensJson);
-        setMpptData(mpptJson);
+        setRaspberryData(rasp.reverse()); // urutkan naik (lama ke baru)
+        setSensorData(sens.reverse());
+        setMpptData(mppt.reverse());
       })
       .catch((err) => {
         setError(err.message || "Unknown error");
@@ -50,237 +49,130 @@ export default function App() {
       .finally(() => setLoading(false));
   }, []);
 
-  if (loading) return <div style={{ padding: 20 }}>Loading data...</div>;
-  if (error) return <div style={{ padding: 20, color: "red" }}>Error: {error}</div>;
+  // Simulasi 5 menit = 1 detik
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setVisibleIndex((prev) => prev + 1);
+    }, 1000); // 1 detik
+
+    return () => clearInterval(interval);
+  }, []);
+
+  const getVisible = (data) => data.slice(0, visibleIndex + 1);
+
+  if (loading) return <div className="status-msg">Loading data...</div>;
+  if (error) return <div className="status-msg error">Error: {error}</div>;
 
   return (
-    <div style={{ padding: 20 }}>
-      <h1>Data Per Jam (Hourly Data)</h1>
+    <div className="app-container">
+      {/* CHARTS */}
+      <div className="charts">
+        <ChartSection title="Raspberry Pi" data={getVisible(raspberryData)} lines={[
+          { key: "cpu_temp", color: "#ff5555", name: "CPU Temp (°C)" },
+          { key: "cpu_usage", color: "#61dafb", name: "CPU Usage (%)" },
+          { key: "mem_usage", color: "#50fa7b", name: "Memory Usage (%)" },
+          { key: "disk_usage", color: "#ff79c6", name: "Disk Usage (%)" },
+        ]} />
 
-      {/* Raspberry Chart */}
-      <section style={{ marginBottom: 50 }}>
-        <h2>Raspberry Pi</h2>
-        <ResponsiveContainer width="100%" height={300}>
-          <LineChart data={raspberryData} margin={{ top: 5, right: 30, bottom: 5, left: 20 }}>
-            <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey="hour" />
-            <YAxis />
-            <Tooltip />
-            <Legend />
-            <Line
-              type="monotone"
-              dataKey="avg_cpu_temp"
-              stroke="#ff0000"
-              name="CPU Temp (°C)"
-              dot={false}
-            />
-            <Line
-              type="monotone"
-              dataKey="avg_cpu_usage"
-              stroke="#0000ff"
-              name="CPU Usage (%)"
-              dot={false}
-            />
-            <Line
-              type="monotone"
-              dataKey="avg_mem_usage"
-              stroke="#00ff00"
-              name="Memory Usage (%)"
-              dot={false}
-            />
-            <Line
-              type="monotone"
-              dataKey="avg_disk_usage"
-              stroke="#ff00ff"
-              name="Disk Usage (%)"
-              dot={false}
-            />
-          </LineChart>
-        </ResponsiveContainer>
+        <ChartSection title="Sensor Data" data={getVisible(sensorData)} lines={[
+          { key: "temp", color: "#ffb86c", name: "Temperature (°C)" },
+          { key: "humidity", color: "#8be9fd", name: "Humidity (%)" },
+          { key: "soil_moisture", color: "#69f0ae", name: "Soil Moisture (%)" },
+          { key: "lux", color: "#f1fa8c", name: "Lux" },
+        ]} />
 
-        <table
-          border="1"
-          cellPadding="8"
-          style={{ marginTop: 15, width: "100%", borderCollapse: "collapse" }}
-        >
-          <thead>
-            <tr>
-              <th>Hour</th>
-              <th>CPU Temp (°C)</th>
-              <th>CPU Usage (%)</th>
-              <th>Memory Usage (%)</th>
-              <th>Disk Usage (%)</th>
-            </tr>
-          </thead>
-          <tbody>
-            {raspberryData.map((item, i) => (
-              <tr key={i}>
-                <td>{item.hour}</td>
-                <td>{item.avg_cpu_temp?.toFixed(2) ?? "-"}</td>
-                <td>{item.avg_cpu_usage?.toFixed(2) ?? "-"}</td>
-                <td>{item.avg_mem_usage?.toFixed(2) ?? "-"}</td>
-                <td>{item.avg_disk_usage?.toFixed(2) ?? "-"}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </section>
+        <ChartSection title="MPPT Data" data={getVisible(mpptData)} lines={[
+          { key: "pv_voltage", color: "#8aff80", name: "PV Voltage (V)" },
+          { key: "pv_current", color: "#bd93f9", name: "PV Current (A)" },
+          { key: "battery_voltage", color: "#ffb86c", name: "Battery Voltage (V)" },
+          { key: "battery_current", color: "#ff5555", name: "Battery Current (A)" },
+          { key: "load_voltage", color: "#8be9fd", name: "Load Voltage (V)" },
+          { key: "load_current", color: "#50fa7b", name: "Load Current (A)" },
+        ]} />
+      </div>
 
-      {/* Sensor Chart */}
-      <section style={{ marginBottom: 50 }}>
-        <h2>Sensor Data</h2>
-        <ResponsiveContainer width="100%" height={300}>
-          <LineChart data={sensorData} margin={{ top: 5, right: 30, bottom: 5, left: 20 }}>
-            <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey="hour" />
-            <YAxis />
-            <Tooltip />
-            <Legend />
-            <Line
-              type="monotone"
-              dataKey="avg_temp"
-              stroke="#ff6600"
-              name="Temperature (°C)"
-              dot={false}
-            />
-            <Line
-              type="monotone"
-              dataKey="avg_humidity"
-              stroke="#0066ff"
-              name="Humidity (%)"
-              dot={false}
-            />
-            <Line
-              type="monotone"
-              dataKey="avg_soil_moisture"
-              stroke="#339966"
-              name="Soil Moisture (%)"
-              dot={false}
-            />
-            <Line
-              type="monotone"
-              dataKey="avg_lux"
-              stroke="#ffcc00"
-              name="Lux"
-              dot={false}
-            />
-          </LineChart>
-        </ResponsiveContainer>
+      {/* TABLES */}
+      <div className="tables">
+        <TableSection
+          title="Raspberry Pi Data"
+          data={getVisible(raspberryData)}
+          columns={["CPU Temp (°C)", "CPU Usage (%)", "Memory Usage (%)", "Disk Usage (%)"]}
+          renderRow={(item) => [
+            item.cpu_temp?.toFixed(2) ?? "-",
+            item.cpu_usage?.toFixed(2) ?? "-",
+            item.mem_usage?.toFixed(2) ?? "-",
+            item.disk_usage?.toFixed(2) ?? "-",
+          ]}
+        />
 
-        <table
-          border="1"
-          cellPadding="8"
-          style={{ marginTop: 15, width: "100%", borderCollapse: "collapse" }}
-        >
-          <thead>
-            <tr>
-              <th>Hour</th>
-              <th>Temp (°C)</th>
-              <th>Humidity (%)</th>
-              <th>Soil Moisture (%)</th>
-              <th>Lux</th>
-            </tr>
-          </thead>
-          <tbody>
-            {sensorData.map((item, i) => (
-              <tr key={i}>
-                <td>{item.hour}</td>
-                <td>{item.avg_temp?.toFixed(2) ?? "-"}</td>
-                <td>{item.avg_humidity?.toFixed(2) ?? "-"}</td>
-                <td>{item.avg_soil_moisture?.toFixed(2) ?? "-"}</td>
-                <td>{item.avg_lux?.toFixed(2) ?? "-"}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </section>
+        <TableSection
+          title="Sensor Data"
+          data={getVisible(sensorData)}
+          columns={["Temp (°C)", "Humidity (%)", "Soil Moisture (%)", "Lux"]}
+          renderRow={(item) => [
+            item.temp?.toFixed(2) ?? "-",
+            item.humidity?.toFixed(2) ?? "-",
+            item.soil_moisture?.toFixed(2) ?? "-",
+            item.lux?.toFixed(2) ?? "-",
+          ]}
+        />
 
-      {/* MPPT Chart */}
-      <section style={{ marginBottom: 50 }}>
-        <h2>MPPT Data</h2>
-        <ResponsiveContainer width="100%" height={300}>
-          <LineChart data={mpptData} margin={{ top: 5, right: 30, bottom: 5, left: 20 }}>
-            <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey="hour" />
-            <YAxis />
-            <Tooltip />
-            <Legend />
-            <Line
-              type="monotone"
-              dataKey="avg_pv_voltage"
-              stroke="#008000"
-              name="PV Voltage (V)"
-              dot={false}
-            />
-            <Line
-              type="monotone"
-              dataKey="avg_pv_current"
-              stroke="#800080"
-              name="PV Current (A)"
-              dot={false}
-            />
-            <Line
-              type="monotone"
-              dataKey="avg_battery_voltage"
-              stroke="#FFA500"
-              name="Battery Voltage (V)"
-              dot={false}
-            />
-            <Line
-              type="monotone"
-              dataKey="avg_battery_current"
-              stroke="#FF4500"
-              name="Battery Current (A)"
-              dot={false}
-            />
-            <Line
-              type="monotone"
-              dataKey="avg_load_voltage"
-              stroke="#1E90FF"
-              name="Load Voltage (V)"
-              dot={false}
-            />
-            <Line
-              type="monotone"
-              dataKey="avg_load_current"
-              stroke="#2E8B57"
-              name="Load Current (A)"
-              dot={false}
-            />
-          </LineChart>
-        </ResponsiveContainer>
-
-        <table
-          border="1"
-          cellPadding="8"
-          style={{ marginTop: 15, width: "100%", borderCollapse: "collapse" }}
-        >
-          <thead>
-            <tr>
-              <th>Hour</th>
-              <th>PV Voltage (V)</th>
-              <th>PV Current (A)</th>
-              <th>Battery Voltage (V)</th>
-              <th>Battery Current (A)</th>
-              <th>Load Voltage (V)</th>
-              <th>Load Current (A)</th>
-            </tr>
-          </thead>
-          <tbody>
-            {mpptData.map((item, i) => (
-              <tr key={i}>
-                <td>{item.hour}</td>
-                <td>{item.avg_pv_voltage?.toFixed(2) ?? "-"}</td>
-                <td>{item.avg_pv_current?.toFixed(2) ?? "-"}</td>
-                <td>{item.avg_battery_voltage?.toFixed(2) ?? "-"}</td>
-                <td>{item.avg_battery_current?.toFixed(2) ?? "-"}</td>
-                <td>{item.avg_load_voltage?.toFixed(2) ?? "-"}</td>
-                <td>{item.avg_load_current?.toFixed(2) ?? "-"}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </section>
+        <TableSection
+          title="MPPT Data"
+          data={getVisible(mpptData)}
+          columns={["PV Voltage", "PV Current", "Battery Voltage", "Battery Current", "Load Voltage", "Load Current"]}
+          renderRow={(item) => [
+            item.pv_voltage?.toFixed(2) ?? "-",
+            item.pv_current?.toFixed(2) ?? "-",
+            item.battery_voltage?.toFixed(2) ?? "-",
+            item.battery_current?.toFixed(2) ?? "-",
+            item.load_voltage?.toFixed(2) ?? "-",
+            item.load_current?.toFixed(2) ?? "-",
+          ]}
+        />
+      </div>
     </div>
   );
 }
+
+const ChartSection = ({ title, data, lines }) => (
+  <section className="chart-section">
+    <h2>{title}</h2>
+    <ResponsiveContainer width="100%" height={300}>
+      <LineChart data={data} margin={{ top: 5, right: 30, bottom: 5, left: 20 }}>
+        <CartesianGrid strokeDasharray="3 3" stroke="#444" />
+        <XAxis dataKey="timestamp" stroke="#aaa" />
+        <YAxis stroke="#aaa" />
+        <Tooltip />
+        <Legend />
+        {lines.map(({ key, color, name }) => (
+          <Line key={key} type="monotone" dataKey={key} stroke={color} name={name} dot={false} />
+        ))}
+      </LineChart>
+    </ResponsiveContainer>
+  </section>
+);
+
+const TableSection = ({ title, data, columns, renderRow }) => (
+  <section className="table-section">
+    <h3>{title}</h3>
+    <div className="table-wrapper">
+      <table>
+        <thead>
+          <tr>
+            <th>Timestamp</th>
+            {columns.map((col, i) => <th key={i}>{col}</th>)}
+          </tr>
+        </thead>
+        <tbody>
+          {data.map((item, i) => (
+            <tr key={i}>
+              <td>{item.timestamp}</td>
+              {renderRow(item).map((val, idx) => <td key={idx}>{val}</td>)}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  </section>
+);

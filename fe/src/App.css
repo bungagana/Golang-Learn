@@ -1,42 +1,28 @@
-#root {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 2rem;
-  text-align: center;
+body {
+  margin:0; background:#0a1f0a; color:#cfe8cf; font-family:sans-serif;
+}
+.loading, .error {
+  padding:40px; text-align:center; font-size:18px;
+}
+.container {
+  display:flex; flex-wrap: wrap;
+  padding:20px;
+}
+.left { flex: 2; min-width:500; margin-right:20px; }
+.right { flex:1; min-width:500px; }
+.chart-block { margin-bottom:20px; border:1px solid #224422; padding:10px; border-radius:8px; }
+.section { margin-bottom:20px; background:#112211; padding:10px; border-radius:8px; }
+.section h3 { margin-top:0; }
+.table-body { max-height:240px; overflow-y:auto; border:1px solid #224422; border-radius:4px; }
+table { width:100%; border-collapse:collapse; }
+th { position: sticky; top:0; background:#224422; padding:6px; color:#cfe8cf; }
+td { padding:4px; border-bottom:1px solid #334433; }
+tr:hover { background:#334433; }
+.pagination { text-align:center; margin-top:6px; }
+.pagination button {
+  margin:2px; padding:4px 6px; background:#224422; color:#cfe8cf; border:none; border-radius:3px;
+}
+.pagination button.active, .pagination button:hover {
+  background:#448844;
 }
 
-.logo {
-  height: 6em;
-  padding: 1.5em;
-  will-change: filter;
-  transition: filter 300ms;
-}
-.logo:hover {
-  filter: drop-shadow(0 0 2em #646cffaa);
-}
-.logo.react:hover {
-  filter: drop-shadow(0 0 2em #61dafbaa);
-}
-
-@keyframes logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-@media (prefers-reduced-motion: no-preference) {
-  a:nth-of-type(2) .logo {
-    animation: logo-spin infinite 20s linear;
-  }
-}
-
-.card {
-  padding: 2em;
-}
-
-.read-the-docs {
-  color: #888;
-}
