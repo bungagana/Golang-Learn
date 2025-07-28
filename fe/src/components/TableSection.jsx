@@ -22,9 +22,9 @@ const TableSection = ({ title, data, columns, renderRow, page, totalPages, onPag
       </table>
     </div>
     <div className="pagination">
-      <button onClick={() => onPageChange(page - 1)} disabled={page === 0}>⏮ Prev</button>
+      <button onClick={() => onPageChange(page - 1)} disabled={page === 0}> Prev</button>
       <span>Page {page + 1} of {totalPages}</span>
-      <button onClick={() => onPageChange(page + 1)} disabled={page >= totalPages - 1}>Next ⏭</button>
+      <button onClick={() => onPageChange(page + 1)} disabled={page >= totalPages - 1}>Nxt</button>
     </div>
   </section>
 );
