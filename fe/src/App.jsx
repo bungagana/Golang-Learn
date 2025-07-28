@@ -1,42 +1,48 @@
 import React, { useEffect, useState } from "react";
-import ChartSection from "./components/ChartSection";
-import TableSection from "./components/TableSection";
-import useFetchAllData from "./hooks/useFetchAllData";
+import ChartSection from "./components/ChartSection";  
+import TableSection from "./components/TableSection"; 
+import useFetchAllData from "./hooks/useFetchAllData"; 
 
 const ITEMS_PER_PAGE = 10; 
 
 export default function App() {
+  // ambil semua data dari hook, udh auto fetch BE
   const { raspberryData, sensorData, mpptData, loading, error } = useFetchAllData();
 
-  const [visibleIndex, setVisibleIndex] = useState(0); // interval display
-  const [page, setPage] = useState(0); 
+  const [visibleIndex, setVisibleIndex] = useState(0); // dipake buat munculin data secara bertahap (efek animasi data masuk)
+  const [page, setPage] = useState(0); // halaman aktif buat pagination
 
+  // bikin efek animasi data muncul 1-per-1 setiap 1 detik
   useEffect(() => {
     const interval = setInterval(() => {
       setVisibleIndex((prev) => prev + 1);
-    }, 1000); //1s
-    return () => clearInterval(interval);
+    }, 1000); // update tiap 1 detik
+    return () => clearInterval(interval); // clear interval kalo komponen unmount
   }, []);
 
+  // ambil data yg udh "visible" sampe index tertentu
   const getVisible = (data) => data.slice(0, visibleIndex + 1);
 
+  // ambil data yg ditampilkan di halaman sekarang
   const getPageData = (data) => {
     const start = page * ITEMS_PER_PAGE;
     return data.slice(start, start + ITEMS_PER_PAGE);
   };
 
+  // hitung jumlah halaman total berdasarkan jumlah data
   const totalPages = (data) => Math.ceil(data.length / ITEMS_PER_PAGE);
+
 
   if (loading) return <div className="status-msg">Loading data...</div>;
   if (error) return <div className="status-msg error">Error: {error}</div>;
 
   return (
     <div className="app-container">
-      {/* Charts */}
+      {/* Bagian grafik */}
       <div className="charts">
         <ChartSection
           title="Raspberry Pi"
-          data={getVisible(raspberryData)}
+          data={getVisible(raspberryData)} // ganti ke getVisible(raspberryData) kalau mau animasi muncul
           lines={[
             { key: "cpu_temp", color: "#ff5555", name: "CPU Temp (°C)" },
             { key: "cpu_usage", color: "#61dafb", name: "CPU Usage (%)" },
@@ -47,7 +53,7 @@ export default function App() {
 
         <ChartSection
           title="Sensor Data"
-          data={getVisible(sensorData)}
+          data={sensorData} // sama, bisa pake getVisible kalo mau efek ngetik
           lines={[
             { key: "temp", color: "#ffb86c", name: "Temperature (°C)" },
             { key: "humidity", color: "#8be9fd", name: "Humidity (%)" },
@@ -58,7 +64,7 @@ export default function App() {
 
         <ChartSection
           title="MPPT Data"
-          data={getVisible(mpptData)}
+          data={getVisible(mpptData)} // yg ini pake efek visible
           lines={[
             { key: "pv_voltage", color: "#8aff80", name: "PV Voltage (V)" },
             { key: "pv_current", color: "#bd93f9", name: "PV Current (A)" },
@@ -70,11 +76,11 @@ export default function App() {
         />
       </div>
 
-      {/* Tables */}
+      {/* Bagian tabel */}
       <div className="tables">
         <TableSection
           title="Raspberry Pi Data"
-          data={getPageData(getVisible(raspberryData))}
+          data={getPageData(getVisible(raspberryData))} // data + animasi + paging
           columns={["CPU Temp (°C)", "CPU Usage (%)", "Memory Usage (%)", "Disk Usage (%)"]}
           renderRow={(item) => [
             item.cpu_temp?.toFixed(2) ?? "-",
@@ -89,7 +95,7 @@ export default function App() {
 
         <TableSection
           title="Sensor Data"
-          data={getPageData(getVisible(sensorData))}
+          data={getPageData(sensorData)} // gak pake animasi visible
           columns={["Temp (°C)", "Humidity (%)", "Soil Moisture (%)", "Lux"]}
           renderRow={(item) => [
             item.temp?.toFixed(2) ?? "-",
@@ -98,7 +104,7 @@ export default function App() {
             item.lux?.toFixed(2) ?? "-",
           ]}
           page={page}
-          totalPages={totalPages(getVisible(sensorData))}
+          totalPages={totalPages(sensorData)}
           onPageChange={setPage}
         />
 

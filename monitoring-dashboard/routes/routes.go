@@ -8,21 +8,30 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 )
 
+// Handler untuk ngambil data Raspberry Pi
 func GetRaspberryData(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+
+	// Konek ke dv
 	db, err := sql.Open("sqlite3", "./db/data.db")
 	if err != nil {
-		http.Error(w, "DB error", 500)
+		http.Error(w, `{"status":"error","message":"DB error"}`, http.StatusInternalServerError)
 		return
 	}
 	defer db.Close()
 
-	rows, err := db.Query("SELECT timestamp, cpu_temp, cpu_usage, mem_usage, disk_usage FROM raspberry_stats ORDER BY id DESC LIMIT 10")
+
+	rows, err := db.Query(`
+		SELECT timestamp, cpu_temp, cpu_usage, mem_usage, disk_usage 
+		FROM raspberry_stats 
+		ORDER BY id DESC LIMIT 10`)
 	if err != nil {
-		http.Error(w, "Query error", 500)
+		http.Error(w, `{"status":"error","message":"Query error"}`, http.StatusInternalServerError)
 		return
 	}
 	defer rows.Close()
 
+	// Struct baris data
 	type RaspberryRow struct {
 		Timestamp  string  `json:"timestamp"`
 		CPUTemp    float64 `json:"cpu_temp"`
@@ -33,20 +42,32 @@ func GetRaspberryData(w http.ResponseWriter, r *http.Request) {
 
 	var result []RaspberryRow
 
+	// Loop tiap baris dari hasil query
 	for rows.Next() {
 		var r RaspberryRow
-		rows.Scan(&r.Timestamp, &r.CPUTemp, &r.CPUUsage, &r.MemUsage, &r.DiskUsage)
+		err := rows.Scan(&r.Timestamp, &r.CPUTemp, &r.CPUUsage, &r.MemUsage, &r.DiskUsage)
+		if err != nil {
+			http.Error(w, `{"status":"error","message":"Data parsing error"}`, http.StatusInternalServerError)
+			return
+		}
 		result = append(result, r)
 	}
 
-	json.NewEncoder(w).Encode(result)
+	// Kirim response JSON
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"status":  "success",
+		"message": "Raspberry Pi data fetched successfully",
+		"data":    result,
+	})
 }
 
-// Fungsi serupa bisa kamu duplikat untuk sensor dan MPPT
+// Handler buat ngambil data sensor
 func GetSensorData(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+
 	db, err := sql.Open("sqlite3", "./db/data.db")
 	if err != nil {
-		http.Error(w, "DB error", 500)
+		http.Error(w, `{"status":"error","message":"DB error"}`, http.StatusInternalServerError)
 		return
 	}
 	defer db.Close()
@@ -54,10 +75,9 @@ func GetSensorData(w http.ResponseWriter, r *http.Request) {
 	rows, err := db.Query(`
 		SELECT timestamp, temp, humidity, soil_moisture, lux 
 		FROM sensor_data 
-		ORDER BY id DESC 
-	`)
+		ORDER BY id DESC`)
 	if err != nil {
-		http.Error(w, "Query error", 500)
+		http.Error(w, `{"status":"error","message":"Query error"}`, http.StatusInternalServerError)
 		return
 	}
 	defer rows.Close()
@@ -76,20 +96,26 @@ func GetSensorData(w http.ResponseWriter, r *http.Request) {
 		var r SensorRow
 		err := rows.Scan(&r.Timestamp, &r.Temp, &r.Humidity, &r.SoilMoisture, &r.Lux)
 		if err != nil {
-			http.Error(w, "Data parsing error", 500)
+			http.Error(w, `{"status":"error","message":"Data parsing error"}`, http.StatusInternalServerError)
 			return
 		}
 		result = append(result, r)
 	}
 
-	json.NewEncoder(w).Encode(result)
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"status":  "success",
+		"message": "Sensor data fetched successfully",
+		"data":    result,
+	})
 }
 
 
 func GetMPPTData(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+
 	db, err := sql.Open("sqlite3", "./db/data.db")
 	if err != nil {
-		http.Error(w, "DB error", 500)
+		http.Error(w, `{"status":"error","message":"DB error"}`, http.StatusInternalServerError)
 		return
 	}
 	defer db.Close()
@@ -98,10 +124,9 @@ func GetMPPTData(w http.ResponseWriter, r *http.Request) {
 		SELECT timestamp, pv_voltage, pv_current, battery_voltage, battery_current, load_voltage, load_current 
 		FROM mppt_logs 
 		ORDER BY id DESC 
-		LIMIT 10
-	`)
+		LIMIT 10`)
 	if err != nil {
-		http.Error(w, "Query error", 500)
+		http.Error(w, `{"status":"error","message":"Query error"}`, http.StatusInternalServerError)
 		return
 	}
 	defer rows.Close()
@@ -130,12 +155,15 @@ func GetMPPTData(w http.ResponseWriter, r *http.Request) {
 			&r.LoadCurrent,
 		)
 		if err != nil {
-			http.Error(w, "Data parsing error", 500)
+			http.Error(w, `{"status":"error","message":"Data parsing error"}`, http.StatusInternalServerError)
 			return
 		}
 		result = append(result, r)
 	}
 
-	json.NewEncoder(w).Encode(result)
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"status":  "success",
+		"message": "MPPT data fetched successfully",
+		"data":    result,
+	})
 }
-
