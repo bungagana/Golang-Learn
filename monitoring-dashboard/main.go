@@ -7,7 +7,7 @@ import (
 	"monitoring-dashboard/routes"
 	"net/http"
 
-	"github.com/rs/cors" // ✅ tambahkan ini
+	"github.com/rs/cors" 
 )
 
 func main() {
@@ -19,13 +19,13 @@ func main() {
 
 	fmt.Println("Import selesai.")
 
-	// ✅ Gunakan http.NewServeMux
+	//Gunakan http.NewServeMux
 	mux := http.NewServeMux()
 	mux.HandleFunc("/api/raspberry", routes.GetRaspberryData)
 	mux.HandleFunc("/api/sensor", routes.GetSensorData)
 	mux.HandleFunc("/api/mppt", routes.GetMPPTData)
 
-	// ✅ Bungkus dengan CORS handler
+	// Bungkus dengan CORS handler
 	handler := cors.AllowAll().Handler(mux)
 
 	fmt.Println("Server running di http://localhost:8080")
