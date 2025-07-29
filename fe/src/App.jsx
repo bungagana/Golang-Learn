@@ -54,7 +54,7 @@ useEffect(() => {
       <div className="charts">
         <ChartSection
           title="Raspberry Pi"
-          data={getVisible(raspberryData)} // ganti ke getVisible(raspberryData) kalau mau animasi muncul
+          data={getVisible(raspberryData)} // ganti ke getVisible(raspberryData)  buat  animasi muncul
           lines={[
             { key: "cpu_temp", color: "#ff5555", name: "CPU Temp (°C)" },
             { key: "cpu_usage", color: "#61dafb", name: "CPU Usage (%)" },
