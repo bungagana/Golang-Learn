@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 
-const apiBase = "https://5b9520d6c4be.ngrok-free.app";
+const apiBase = "http://localhost:8080";
 
 const useFetchAllData = () => {
   const [raspberryData, setRaspberryData] = useState([]);
