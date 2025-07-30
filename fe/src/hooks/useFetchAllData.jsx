@@ -72,9 +72,10 @@
 
 // export default useFetchAllData;
 
+
 import { useState, useEffect } from "react";
 
-const apiBase = "https://5b9520d6c4be.ngrok-free.app"; // ganti ke base URL kamu
+const apiBase = import.meta.env.VITE_API_BASE; // untuk Vite
 
 const useFetchAllData = () => {
   const [raspberryData, setRaspberryData] = useState([]);
@@ -88,15 +89,11 @@ const useFetchAllData = () => {
       setLoading(true);
       setError(null);
 
-      const headers = {
-        "ngrok-skip-browser-warning": "true"
-      };
-
       try {
         const [resRasp, resSens, resMppt] = await Promise.all([
-          fetch(`${apiBase}/api/raspberry`, { headers }),
-          fetch(`${apiBase}/api/sensor`, { headers }),
-          fetch(`${apiBase}/api/mppt`, { headers })
+          fetch(`${apiBase}/api/raspberry`),
+          fetch(`${apiBase}/api/sensor`),
+          fetch(`${apiBase}/api/mppt`)
         ]);
 
         if (!resRasp.ok || !resSens.ok || !resMppt.ok) {
@@ -109,13 +106,14 @@ const useFetchAllData = () => {
           resMppt.json()
         ]);
 
-        // Safety check: pastikan .data array sebelum .reverse
-        const safeReverse = (data) =>
-          Array.isArray(data) ? [...data].reverse() : [];
+        // Debug log jika terjadi error `.reverse is not a function`
+        console.log("raspJson:", raspJson);
+        console.log("sensorJson:", sensJson);
+        console.log("mpptJson:", mpptJson);
 
-        setRaspberryData(safeReverse(raspJson.data));
-        setSensorData(safeReverse(sensJson.data));
-        setMpptData(safeReverse(mpptJson.data));
+        setRaspberryData(Array.isArray(raspJson.data) ? raspJson.data.reverse() : []);
+        setSensorData(Array.isArray(sensJson.data) ? sensJson.data.reverse() : []);
+        setMpptData(Array.isArray(mpptJson.data) ? mpptJson.data.reverse() : []);
       } catch (err) {
         setError(err.message || "Unknown error");
       } finally {
