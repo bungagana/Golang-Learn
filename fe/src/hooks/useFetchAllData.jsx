@@ -34,6 +34,9 @@ const useFetchAllData = () => {
           resMppt.json()
         ]);
 
+        console.log("raspJson", raspJson);
+        console.log("raspJson.data", raspJson.data);
+
         // Set data ke state (reverse biar urutan terbaru ke atas)
         setRaspberryData(Array.isArray(raspJson.data) ? raspJson.data.reverse() : []);
         setSensorData(Array.isArray(sensJson.data) ? sensJson.data.reverse() : []);
