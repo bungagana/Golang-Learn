@@ -28,6 +28,6 @@ func main() {
 	// Bungkus dengan CORS handler
 	handler := cors.AllowAll().Handler(mux)
 
-	fmt.Println("Server running di http://localhost:8080")
+	fmt.Println("Server running di httsp://localhost:8080")
 	log.Fatal(http.ListenAndServe(":8080", handler))
 }
