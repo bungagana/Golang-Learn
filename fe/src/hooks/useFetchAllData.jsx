@@ -38,23 +38,12 @@ const useFetchAllData = () => {
         setRaspberryData(Array.isArray(raspJson.data) ? raspJson.data.reverse() : []);
         setSensorData(Array.isArray(sensJson.data) ? sensJson.data.reverse() : []);
         setMpptData(Array.isArray(mpptJson.data) ? mpptJson.data.reverse() : []);
-
-
-  //         setRaspberryData(
-  //   Array.isArray(raspJson.data) ? [...raspJson.data].reverse() : []
-  // );
-  // setSensorData(
-  //   Array.isArray(sensJson.data) ? [...sensJson.data].reverse() : []
-  // );
-  // setMpptData(
-  //   Array.isArray(mpptJson.data) ? [...mpptJson.data].reverse() : []
-  // );
-  //     } catch (err) {
-  //       setError(err.message || "Unknown error");
-  //     } finally {
-  //       setLoading(false);
-  //     }
-  //   };
+      } catch (err) {
+        setError(err.message || "Unknown error");
+      } finally {
+        setLoading(false);
+      }
+    };
 
     fetchData();
   }, []);
