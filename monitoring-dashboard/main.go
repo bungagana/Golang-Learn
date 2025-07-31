@@ -25,12 +25,16 @@ func main() {
 	mux.HandleFunc("/api/mppt", routes.GetMPPTData)
 
 	// CORS handler
-	c := cors.New(cors.Options{
-    AllowedOrigins:   []string{"https://dashboard-monitoring-zeta.vercel.app"},
+c := cors.New(cors.Options{
+    AllowedOrigins:   []string{
+        "https://dashboard-monitoring.si-akif.my.id",
+        "https://dashboard-monitoring-zeta.vercel.app", 
+    },
     AllowCredentials: true,
     AllowedMethods:   []string{"GET", "POST", "OPTIONS"},
     AllowedHeaders:   []string{"*"},
 })
+
 
 handler := c.Handler(mux)
 
