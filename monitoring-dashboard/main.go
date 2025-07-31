@@ -7,7 +7,7 @@ import (
 	"monitoring-dashboard/routes"
 	"net/http"
 
-	"github.com/rs/cors" 
+	"github.com/rs/cors"
 )
 
 func main() {
@@ -25,7 +25,15 @@ func main() {
 	mux.HandleFunc("/api/mppt", routes.GetMPPTData)
 
 	// CORS handler
-	handler := cors.AllowAll().Handler(mux)
+	c := cors.New(cors.Options{
+    AllowedOrigins:   []string{"https://dashboard-monitoring-zeta.vercel.app"},
+    AllowCredentials: true,
+    AllowedMethods:   []string{"GET", "POST", "OPTIONS"},
+    AllowedHeaders:   []string{"*"},
+})
+
+handler := c.Handler(mux)
+
 
 	fmt.Println("Server running di http://localhost:8080")
 	log.Fatal(http.ListenAndServe(":8080", handler))
