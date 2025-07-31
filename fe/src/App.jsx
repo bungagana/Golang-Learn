@@ -107,7 +107,7 @@ useEffect(() => {
 
         <TableSection
           title="Sensor Data"
-          data={getPageData(sensorData)} // gak pake animasi visible
+          data={getPageData(getVisible(sensorData))} // gak pake animasi visible
           columns={["Temp (°C)", "Humidity (%)", "Soil Moisture (%)", "Lux"]}
           renderRow={(item) => [
             item.temp?.toFixed(2) ?? "-",
@@ -116,7 +116,7 @@ useEffect(() => {
             item.lux?.toFixed(2) ?? "-",
           ]}
           page={page}
-          totalPages={totalPages(sensorData)}
+          totalPages={totalPages(getVisible(sensorData))}
           onPageChange={setPage}
         />
 

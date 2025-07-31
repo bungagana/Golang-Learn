@@ -58,6 +58,7 @@
 // };
 
 // export default useFetchAllData;
+
 import { useState, useEffect } from "react";
 
 // Ganti ke URL Ngrok kamu sekarang (tanpa / di belakang)
@@ -76,7 +77,7 @@ const useFetchAllData = () => {
       setError(null);
 
       try {
-        console.log(`🔎 Fetching data dari: ${apiBase}`);
+        console.log(`Fetching data dari: ${apiBase}`);
 
         // Tambahkan header ngrok-skip-browser-warning
         const fetchWithHeaders = (url) =>
@@ -92,7 +93,7 @@ const useFetchAllData = () => {
 
         // Kalau ada yang gagal, log error
         if (!resRasp.ok || !resSens.ok || !resMppt.ok) {
-          console.error("❌ Salah satu endpoint gagal:", {
+          console.error("Salah satu endpoint gagal:", {
             raspberry: resRasp.status,
             sensor: resSens.status,
             mppt: resMppt.status
@@ -106,7 +107,7 @@ const useFetchAllData = () => {
           try {
             return JSON.parse(text);
           } catch {
-            console.error(`🔥 Response ${name} bukan JSON:`, text);
+            console.error(`Response ${name} bukan JSON:`, text);
             return null;
           }
         };
@@ -120,7 +121,7 @@ const useFetchAllData = () => {
         // Set data dengan validasi biar gak crash
         const safeReverse = (data, name) => {
           if (Array.isArray(data)) return [...data].reverse();
-          console.error(`⚠️ Data ${name} bukan array:`, data);
+          console.error(`Data ${name} bukan array:`, data);
           return [];
         };
 
@@ -128,7 +129,7 @@ const useFetchAllData = () => {
         setSensorData(safeReverse(sensJson?.data, "Sensor"));
         setMpptData(safeReverse(mpptJson?.data, "MPPT"));
       } catch (err) {
-        console.error("🔥 Error di fetchData:", err);
+        console.error(" Error di fetchData:", err);
         setError(err.message || "Unknown error");
       } finally {
         setLoading(false);
