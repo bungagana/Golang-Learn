@@ -11,7 +11,7 @@ html, body, #root {
 
 .app-container {
   display: grid;
-  grid-template-columns: 70% 30%; /* tabel lebih lebar */
+  grid-template-columns: 70% 30%; 
   height: 100vh;
   gap: 20px;
   padding: 20px;
@@ -49,7 +49,7 @@ html, body, #root {
 
 .table-wrapper {
   overflow-x: auto;
-  max-height: 350px; /* tinggi tabel diperbesar */
+  max-height: 350px;
 }
 
 table {
@@ -117,7 +117,7 @@ table tr:nth-child(odd) {
   color: #ff6b6b;
 }
 
-/* Styling Tooltip di Chart */
+/* Chart Tooltip Style */
 .recharts-tooltip-wrapper {
   background: rgba(30, 30, 30, 0.95) !important;
   padding: 10px !important;
@@ -137,12 +137,18 @@ table tr:nth-child(odd) {
   gap: 10px;
 }
 
+.recharts-legend-wrapper {
+  max-height: 60px;
+  overflow-y: auto;
+}
+
+/* ---------- ✅ Mobile Optimization ---------- */
 @media (max-width: 768px) {
   .app-container {
     display: flex;
     flex-direction: column;
     padding: 10px;
-    gap: 10px;
+    gap: 12px;
     height: auto;
     overflow: visible;
   }
@@ -150,30 +156,74 @@ table tr:nth-child(odd) {
   .charts,
   .tables {
     padding: 0;
+    gap: 12px;
     max-height: none;
     overflow: visible;
   }
 
   .chart-section,
   .table-section {
-    padding: 12px;
+    padding: 10px 12px;
     border-radius: 8px;
+  }
+
+  .chart-section h2,
+  .table-section h2 {
+    font-size: 16px;
+    margin-bottom: 8px;
+  }
+
+  .chart-section > div {
+    overflow-x: auto;
+  }
+
+  .recharts-wrapper {
+    height: 250px !important;
+    min-width: 100%;
+  }
+
+  .recharts-legend-wrapper {
+    max-height: 50px;
+    overflow-y: auto;
+    font-size: 11px;
+  }
+
+  .recharts-tooltip-wrapper {
+    font-size: 12px;
+    padding: 6px !important;
+    border-radius: 6px;
+  }
+
+  .recharts-tooltip-item {
+    gap: 6px;
   }
 
   .table-wrapper {
     overflow-x: auto;
-    max-height: unset;
+    max-height: 250px;
   }
 
   table {
-    font-size: 12px;
-    min-width: 600px; /* biar gak kepotong */
+    font-size: 13px;
+    min-width: 500px;
+  }
+
+  table th,
+  table td {
+    padding: 6px;
   }
 
   .pagination {
-    flex-wrap: wrap;
     justify-content: center;
+    flex-wrap: wrap;
+    font-size: 13px;
     gap: 6px;
-    font-size: 14px;
+    margin-top: 8px;
+  }
+
+  .pagination button {
+    padding: 5px 10px;
+    font-size: 13px;
   }
 }
+
