@@ -26,3 +26,38 @@ tr:hover { background:#334433; }
   background:#448844;
 }
 
+
+input[type="date"] {
+  background-color: #2a2a2a;
+  color: #f0f0f0;
+  border: 1px solid #555;
+  border-radius: 5px;
+  padding: 6px 10px;
+  font-size: 14px;
+  outline: none;
+}
+
+input[type="date"]::placeholder {
+  color: #aaa;
+}
+
+input[type="date"]::-webkit-calendar-picker-indicator {
+  filter: invert(1); /* supaya icon kalender putih di dark mode */
+}
+input[type="date"] {
+  background-color: #2a2a2a;
+  color: #f0f0f0;
+  border: 1px solid #555;
+  border-radius: 5px;
+  padding: 6px 10px;
+  font-size: 14px;
+  outline: none;
+  appearance: none;
+  -webkit-appearance: none;
+  position: relative;
+}
+
+input[type="date"]::-webkit-calendar-picker-indicator {
+  filter: invert(1);
+  cursor: pointer;
+}
