@@ -1,6 +1,6 @@
 // import { useState, useEffect } from "react";
 
-// const apiBase = "http://localhost:8080";
+// const apiBase = "https://c96354a02b29.ngrok-free.app";
 
 // const useFetchAllData = () => {
 //   const [raspberryData, setRaspberryData] = useState([]);
@@ -60,7 +60,8 @@
 // export default useFetchAllData;
 import { useState, useEffect } from "react";
 
-const apiBase = "http://localhost:8080";
+// Ganti ke URL Ngrok kamu sekarang (tanpa / di belakang)
+const apiBase = "https://c96354a02b29.ngrok-free.app";
 
 const useFetchAllData = () => {
   const [raspberryData, setRaspberryData] = useState([]);
@@ -75,48 +76,59 @@ const useFetchAllData = () => {
       setError(null);
 
       try {
-        // Fetch semua endpoint paralel tapi masing2 aman dari error
-        const fetchWithLog = async (url, name) => {
+        console.log(`🔎 Fetching data dari: ${apiBase}`);
+
+        // Tambahkan header ngrok-skip-browser-warning
+        const fetchWithHeaders = (url) =>
+          fetch(url, {
+            headers: { "ngrok-skip-browser-warning": "true" }
+          });
+
+        const [resRasp, resSens, resMppt] = await Promise.all([
+          fetchWithHeaders(`${apiBase}/api/raspberry`),
+          fetchWithHeaders(`${apiBase}/api/sensor`),
+          fetchWithHeaders(`${apiBase}/api/mppt`)
+        ]);
+
+        // Kalau ada yang gagal, log error
+        if (!resRasp.ok || !resSens.ok || !resMppt.ok) {
+          console.error("❌ Salah satu endpoint gagal:", {
+            raspberry: resRasp.status,
+            sensor: resSens.status,
+            mppt: resMppt.status
+          });
+          throw new Error("Gagal fetch salah satu data dari server.");
+        }
+
+        // Parse JSON aman (debug kalau gagal)
+        const parseSafe = async (res, name) => {
+          const text = await res.text();
           try {
-            console.log(`🔎 Fetching ${name}: ${url}`);
-            const res = await fetch(url);
-
-            // Kalau status bukan 200, log error
-            if (!res.ok) {
-              console.error(`❌ ${name} gagal: ${res.status} ${res.statusText}`);
-              return null;
-            }
-
-            const json = await res.json();
-            console.log(`✅ ${name} berhasil:`, json);
-
-            return json;
-          } catch (err) {
-            console.error(`🔥 Error fetch ${name}:`, err);
+            return JSON.parse(text);
+          } catch {
+            console.error(`🔥 Response ${name} bukan JSON:`, text);
             return null;
           }
         };
 
         const [raspJson, sensJson, mpptJson] = await Promise.all([
-          fetchWithLog(`${apiBase}/api/raspberry`, "Raspberry"),
-          fetchWithLog(`${apiBase}/api/sensor`, "Sensor"),
-          fetchWithLog(`${apiBase}/api/mppt`, "MPPT")
+          parseSafe(resRasp, "Raspberry"),
+          parseSafe(resSens, "Sensor"),
+          parseSafe(resMppt, "MPPT")
         ]);
 
-        // Validasi & set state dengan aman
-        const safeArray = (data, name) => {
-          if (!data || !Array.isArray(data.data)) {
-            console.error(`⚠️ Data ${name} bukan array atau null:`, data);
-            return [];
-          }
-          return [...data.data].reverse(); // copy + reverse
+        // Set data dengan validasi biar gak crash
+        const safeReverse = (data, name) => {
+          if (Array.isArray(data)) return [...data].reverse();
+          console.error(`⚠️ Data ${name} bukan array:`, data);
+          return [];
         };
 
-        setRaspberryData(safeArray(raspJson, "Raspberry"));
-        setSensorData(safeArray(sensJson, "Sensor"));
-        setMpptData(safeArray(mpptJson, "MPPT"));
+        setRaspberryData(safeReverse(raspJson?.data, "Raspberry"));
+        setSensorData(safeReverse(sensJson?.data, "Sensor"));
+        setMpptData(safeReverse(mpptJson?.data, "MPPT"));
       } catch (err) {
-        console.error("🔥 Fatal error:", err);
+        console.error("🔥 Error di fetchData:", err);
         setError(err.message || "Unknown error");
       } finally {
         setLoading(false);
