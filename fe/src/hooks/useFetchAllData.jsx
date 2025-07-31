@@ -62,7 +62,7 @@
 import { useState, useEffect } from "react";
 
 // Ganti ke URL Ngrok kamu sekarang (tanpa / di belakang)
-const apiBase = "https://c96354a02b29.ngrok-free.app";
+const apiBase = "https://388466963364.ngrok-free.app";
 
 const useFetchAllData = () => {
   const [raspberryData, setRaspberryData] = useState([]);
