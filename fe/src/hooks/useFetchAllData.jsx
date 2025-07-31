@@ -13,26 +13,31 @@ const useFetchAllData = () => {
     const fetchData = async () => {
       setLoading(true);
       setError(null);
+
       try {
+        // Fetch semua endpoint paralel
         const [resRasp, resSens, resMppt] = await Promise.all([
           fetch(`${apiBase}/api/raspberry`),
           fetch(`${apiBase}/api/sensor`),
-          fetch(`${apiBase}/api/mppt`),
+          fetch(`${apiBase}/api/mppt`)
         ]);
 
+        // Cek status code response
         if (!resRasp.ok || !resSens.ok || !resMppt.ok) {
-          throw new Error("Failed to fetch some data");
+          throw new Error("Gagal fetch salah satu data dari server.");
         }
 
-        const [rasp, sens, mppt] = await Promise.all([
+        // Ambil JSON dari masing-masing respons
+        const [raspJson, sensJson, mpptJson] = await Promise.all([
           resRasp.json(),
           resSens.json(),
-          resMppt.json(),
+          resMppt.json()
         ]);
 
-        setRaspberryData(rasp.reverse());
-        setSensorData(sens.reverse());
-        setMpptData(mppt.reverse());
+        // Set data ke state (reverse biar urutan terbaru ke atas)
+        setRaspberryData(Array.isArray(raspJson.data) ? raspJson.data.reverse() : []);
+        setSensorData(Array.isArray(sensJson.data) ? sensJson.data.reverse() : []);
+        setMpptData(Array.isArray(mpptJson.data) ? mpptJson.data.reverse() : []);
       } catch (err) {
         setError(err.message || "Unknown error");
       } finally {
@@ -43,7 +48,13 @@ const useFetchAllData = () => {
     fetchData();
   }, []);
 
-  return { raspberryData, sensorData, mpptData, loading, error };
+  return {
+    raspberryData,
+    sensorData,
+    mpptData,
+    loading,
+    error
+  };
 };
 
 export default useFetchAllData;
