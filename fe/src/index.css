@@ -1,5 +1,3 @@
-/* #index.css */
-
 html, body, #root {
   margin: 0;
   padding: 0;
@@ -11,10 +9,9 @@ html, body, #root {
   overflow-y: auto;
 }
 
-
 .app-container {
   display: grid;
-  grid-template-columns: 60% 40%;
+  grid-template-columns: 70% 30%; /* tabel lebih lebar */
   height: 100vh;
   gap: 20px;
   padding: 20px;
@@ -52,7 +49,7 @@ html, body, #root {
 
 .table-wrapper {
   overflow-x: auto;
-  max-height: 200px;
+  max-height: 350px; /* tinggi tabel diperbesar */
 }
 
 table {
@@ -64,11 +61,15 @@ table th, table td {
   padding: 8px;
   text-align: center;
   border: 1px solid #333;
+  white-space: nowrap;
 }
 
 table th {
   background-color: #2a2a2a;
   color: #f0f0f0;
+  position: sticky;
+  top: 0;
+  z-index: 1;
 }
 
 table tr:nth-child(even) {
@@ -116,6 +117,25 @@ table tr:nth-child(odd) {
   color: #ff6b6b;
 }
 
+/* Styling Tooltip di Chart */
+.recharts-tooltip-wrapper {
+  background: rgba(30, 30, 30, 0.95) !important;
+  padding: 10px !important;
+  border-radius: 8px;
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.recharts-tooltip-label {
+  font-weight: bold;
+  color: #fff;
+}
+
+.recharts-tooltip-item {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+}
 
 @media (max-width: 768px) {
   .app-container {

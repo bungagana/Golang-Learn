@@ -6,29 +6,38 @@ import (
 	"monitoring-dashboard/importcsv"
 	"monitoring-dashboard/routes"
 	"net/http"
+	"path/filepath"
 
 	"github.com/rs/cors"
 )
 
 func main() {
-	fmt.Println("Mulai import data...")
+	fmt.Println("=== Mulai Import Data CSV ===")
 
+	// Import data CSV (bisa ditambah otomatis)
 	importcsv.ImportRaspberryData("data/ITS_POME_RASP_20250727_213631.csv")
 	importcsv.ImportSensorData("data/ITS-POME_27072025_213613.csv")
 	importcsv.ImportMPPTData("data/MPPT_LOG_2025-07-27.csv")
 
-	fmt.Println("Import selesai.")
+	fmt.Println("=== Import Data Selesai ===")
 
+	// ROUTER
 	mux := http.NewServeMux()
-	mux.HandleFunc("/api/raspberry", routes.GetRaspberryData)
-	mux.HandleFunc("/api/sensor", routes.GetSensorData)
-	mux.HandleFunc("/api/mppt", routes.GetMPPTData)
 
-	// CORS handler
+	// Endpoint dinamis untuk semua tabel
+	// Contoh: /api/data?table=raspberry_stats
+	mux.HandleFunc("/api/data", routes.GetDataDynamic)
+
+	// Kalau mau juga expose file CSV (opsional)
+	mux.Handle("/data/", http.StripPrefix("/data/", http.FileServer(http.Dir(filepath.Join(".", "data")))))
+
+	// CORS config
 c := cors.New(cors.Options{
-    AllowedOrigins:   []string{
-        "https://dashboard-monitoring.si-akif.my.id",
-        "https://dashboard-monitoring-zeta.vercel.app", 
+    AllowedOrigins: []string{
+        "http://localhost:5173",                      // FE dev (Vite/React)
+        "https://dashboard-monitoring.si-akif.my.id", // domain production
+        "https://dashboard-monitoring-zeta.vercel.app",
+        "https://388466963364.ngrok-free.app",        // API di ngrok
     },
     AllowCredentials: true,
     AllowedMethods:   []string{"GET", "POST", "OPTIONS"},
@@ -36,12 +45,14 @@ c := cors.New(cors.Options{
 })
 
 
-handler := c.Handler(mux)
-
+	handler := c.Handler(mux)
 
 	fmt.Println("Server running di http://localhost:8080")
 	log.Fatal(http.ListenAndServe(":8080", handler))
 }
+
+
+
 
 // package main
 
